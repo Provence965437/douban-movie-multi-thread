@@ -19,6 +19,7 @@ create table movie (
     `duration` text comment '播放时长',
     `score` text comment '评分',
     `description` text comment '描述',
+    `cover` text comment '封面链接',
     `tags` text comment '标签',
     `create_at` timestamp not null default current_timestamp
 ) engine=innodb default charset=utf8mb4;

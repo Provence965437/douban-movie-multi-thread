@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # coding=utf-8
 # author=XingLong Pan
 # date=2016-12-06
 
 import pymysql.cursors
 import configparser
-
+import warnings
+warnings.filterwarnings("ignore")
 
 class DbHelper:
 
@@ -33,9 +34,10 @@ class DbHelper:
                 sql = "INSERT IGNORE INTO `movie` (`douban_id`, `title`, `directors`, " \
                       "`scriptwriters`, `actors`, `types`,`release_region`," \
                       "`release_date`,`alias`,`languages`,`duration`,`score`," \
-                      "`description`,`tags`) VALUES (%s," \
+                      "`description`,`tags`,`cover`) VALUES (%s," \
                       "%s, %s, %s, %s, %s, %s, %s," \
-                      "%s, %s, %s, %s, %s, %s);"
+                      "%s, %s, %s, %s, %s, %s, %s);"
+                #print(movie['cover'])
                 cursor.execute(sql, (
                     movie['douban_id'],
                     movie['title'],
@@ -50,11 +52,15 @@ class DbHelper:
                     movie['duration'],
                     movie['score'],
                     movie['description'],
-                    movie['tags']
+                    movie['tags'],
+                    movie['cover'],
+
                 ))
                 self.__connection.commit()
+        except Exception as e:
+               self.__connection.rollback()
         finally:
-            pass
+               pass
 
     def close_db(self):
         self.__connection.close()

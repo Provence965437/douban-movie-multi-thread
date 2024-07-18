@@ -20,5 +20,6 @@ movie = {
     'description': '',
     'tags': '',
     'link': '',
-    'posters': ''
+    'posters': '',
+    'cover': ''
 }

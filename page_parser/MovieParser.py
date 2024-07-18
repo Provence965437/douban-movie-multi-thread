@@ -5,7 +5,11 @@
 
 from bs4 import BeautifulSoup
 from page_parser import Entity
+import logging
 
+# 设置日志配置
+logging.basicConfig(filename='missing_cover_log.txt', level=logging.INFO, 
+                    format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 class MovieParser:
     """
@@ -16,27 +20,38 @@ class MovieParser:
     __soup = ''
     __movie = None
     __NOT_FOUND = '页面不存在'
+    __NOT_FOUND2 = '条目不存在'
+    __IP_BLOCK = '登录跳转'
     __html_doc = ''
+    __error = ''
 
     def __set_bs_soup(self):
 
         self.__soup = BeautifulSoup(self.__html_doc, 'html.parser')
+    
+    def is_ip_forbid(self):
+        if self.__html_doc.find(self.__IP_BLOCK) != -1:
+             return True
+        return False
 
     def __is_404_page(self):
 
         if self.__html_doc.find(self.__NOT_FOUND) != -1:
             return True
-
-        if len(self.__html_doc) < 500:
+        if self.__html_doc.find(self.__NOT_FOUND2) != -1:
             return True
 
+        if len(self.__html_doc) < 500:
+            print("500")
         return False
 
     def __get_title(self):
         try:
             info = self.__soup.find('span', {'property': 'v:itemreviewed'})
             self.__movie['title'] = info.text
-        except:
+        except Exception as e:
+            #print(f"get_title错误：{e} ")
+            #print(f"get_title错误：{e} {self.__html_doc}")
             pass
 
     def __get_directors(self):
@@ -111,6 +126,19 @@ class MovieParser:
         try:
             info = self.__soup.find('span', {'property': 'v:summary'})
             self.__movie['description'] = info.text.replace(' ', '').strip()
+        except:
+            pass
+    def __get_cover(self):
+        try:
+            info = self.__soup.find('img', {'rel': ['v:photo', 'v:image']})
+            if info:
+                cover_img_url = info['src']
+                ##print("封面图片链接:", cover_img_url)
+                self.__movie['cover'] = cover_img_url 
+            else:
+                print("未找到封面图片: %s", url) 
+             
+                logging.info("未找到封面图片: %s", url) 
         except:
             pass
 
@@ -189,7 +217,7 @@ class MovieParser:
         if self.__is_404_page():
             return None
 
-        print(self.__html_doc)
+        ##print(self.__html_doc)
 
         self.__set_bs_soup()
 
@@ -202,6 +230,7 @@ class MovieParser:
         self.__release_date()
         self.__get_score()
         self.__get_tags()
+        self.__get_cover()
         self.__get_description()
         self.__get_others()
         self.__get_scriptwriters()
